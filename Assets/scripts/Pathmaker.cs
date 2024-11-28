@@ -20,6 +20,9 @@ public class Pathmaker : MonoBehaviour
     //	Declare a public Transform called floorPrefab, assign the prefab in inspector;
     //	Declare a public Transform called pathmakerSpherePrefab, assign the prefab in inspector; 		// you'll have to make a "pathmakerSphere" prefab later
 
+    public int counter = 0;
+    public Transform floorPrefab;
+    public Transform pathmakerSpherePrefab;
 
     void Update()
     {
