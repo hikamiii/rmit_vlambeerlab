@@ -27,7 +27,7 @@ public class GameManager : MonoBehaviour
             Pathmaker.globalTileCount = 0;
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
-        if (Input.GetKeyDown(KeyCode.F))
+        if (Input.GetKeyDown(KeyCode.C))
         {
             SwitchCameraController();
         }
@@ -48,5 +48,14 @@ public class GameManager : MonoBehaviour
         cameraControllers[activeControllerIndex].enabled = true;
 
         Debug.Log($"Switched to Camera Controller {activeControllerIndex + 1}");
+
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            FlipCamera();
+        }
+    }
+    private void FlipCamera()
+    {
+        mainCamera.transform.rotation = Quaternion.Euler(0, 180, 0);
     }
 }

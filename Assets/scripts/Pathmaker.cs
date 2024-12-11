@@ -5,6 +5,7 @@ using UnityEngine;
 public class Pathmaker : MonoBehaviour
 {
     public int floorCounter = 0;
+    public GameObject trapPrefab;
     public GameObject floorPrefab1;
     public GameObject floorPrefab2;
     public GameObject wallPrefab;
@@ -77,6 +78,10 @@ public class Pathmaker : MonoBehaviour
                     {
                         GameObject selectedEnemy = Random.Range(0, 2) == 0 ? enemyPrefab1 : enemyPrefab2;
                         GameObject newEnemy = Instantiate(selectedEnemy, transform.position, Quaternion.identity);
+                    }
+                    if (randomObject > 0.05 && randomObject <= 0.1)
+                    {
+                        Instantiate(trapPrefab, transform.position, Quaternion.identity);
                     }
 
                     placedFloors.Add(newFloor);
@@ -154,7 +159,7 @@ public class Pathmaker : MonoBehaviour
             PlaceObject(selectedEnemy, originalPosition + new Vector3(2, 0, 5));
         }
 
-        transform.position = originalPosition + new Vector3(7, 0, 0);
+        transform.position = originalPosition + new Vector3(7, 0, 2);
         floorCounter += 30;
 
         Debug.Log("Room Created");
