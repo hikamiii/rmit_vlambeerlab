@@ -1,35 +1,53 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     [SerializeField] Camera mainCamera;
-
+    [SerializeField] GameObject pathmaker;
+    [SerializeField] GameObject generateClip;
+    public GameObject clicked;
+    public GameObject unClicked;
+    public AudioClip unlockedAudioClip;
+    public AudioClip lockedAudioClip;
+    public AudioClip restartClip;
+    private AudioSource audioSource;
+    private bool hasClicked = false;
     private MonoBehaviour[] cameraControllers;
     private int activeControllerIndex = 0;
 
     private void Start()
     {
-        // Get all camera controller scripts attached to the camera
         cameraControllers = mainCamera.GetComponents<MonoBehaviour>();
+        audioSource = gameObject.GetComponent<AudioSource>();
 
-        // Disable all except the first controller by default
         for (int i = 0; i < cameraControllers.Length; i++)
         {
             cameraControllers[i].enabled = (i == activeControllerIndex);
         }
+
+        UpdateGameObjectState();
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            Pathmaker.globalTileCount = 0;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            audioSource.clip = restartClip;
+            audioSource.Play();
+            pathmaker.SetActive(false);
+            generateClip.SetActive(false);
+
+            StartCoroutine(restart());
         }
-        if (Input.GetKeyDown(KeyCode.C))
+        if (Input.GetKeyDown(KeyCode.F))
         {
             SwitchCameraController();
+        }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
         }
     }
 
@@ -37,25 +55,38 @@ public class GameManager : MonoBehaviour
     {
         if (cameraControllers == null || cameraControllers.Length == 0)
         {
-            Debug.LogError("No camera controllers found!");
             return;
         }
-
         cameraControllers[activeControllerIndex].enabled = false;
-
         activeControllerIndex = (activeControllerIndex + 1) % cameraControllers.Length;
-
         cameraControllers[activeControllerIndex].enabled = true;
 
-        Debug.Log($"Switched to Camera Controller {activeControllerIndex + 1}");
+        hasClicked = !hasClicked;
+        UpdateGameObjectState();
+        PlayAudioClip();
+    }
 
-        if (Input.GetKeyDown(KeyCode.F))
+    private void UpdateGameObjectState()
+    {
+        if (clicked != null && unClicked != null)
         {
-            FlipCamera();
+            clicked.SetActive(hasClicked);
+            unClicked.SetActive(!hasClicked);
         }
     }
-    private void FlipCamera()
+
+    private void PlayAudioClip()
     {
-        mainCamera.transform.rotation = Quaternion.Euler(0, 180, 0);
+        if (audioSource != null)
+        {
+            audioSource.clip = hasClicked ? unlockedAudioClip : lockedAudioClip;
+            audioSource.Play();
+        }
+    }
+    IEnumerator restart()
+    {
+        yield return new WaitForSeconds(1);
+        Pathmaker.globalTileCount = 0;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

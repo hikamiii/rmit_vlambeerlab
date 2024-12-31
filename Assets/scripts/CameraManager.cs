@@ -25,7 +25,7 @@ public class CameraManager : MonoBehaviour
         averagePosition /= floorTiles.Length;
 
         // Move the camera to the center
-        targetPosition = new Vector3(averagePosition.x, transform.position.y, averagePosition.z - 38);
+        targetPosition = new Vector3(averagePosition.x, transform.position.y, averagePosition.z + 38);
         transform.position = Vector3.Lerp(transform.position, targetPosition, smoothSpeed);
 
         // Dynamically adjust the field of view
@@ -42,8 +42,7 @@ public class CameraManager : MonoBehaviour
             maxDistance = Mathf.Max(maxDistance, distance);
         }
 
-        // Increase the field of view proportionally to maxDistance, clamped between 10 and 60
-        float targetFieldOfView = Mathf.Clamp(10 + maxDistance * 2, 10, 70); // Adjust scaling factor as needed
+        float targetFieldOfView = Mathf.Clamp(10 + maxDistance * 2, 10, 90);
         currentFieldOfView = Mathf.Lerp(currentFieldOfView, targetFieldOfView, smoothSpeed);
 
         mainCamera.fieldOfView = currentFieldOfView;

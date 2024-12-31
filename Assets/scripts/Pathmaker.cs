@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Pathmaker : MonoBehaviour
 {
@@ -14,6 +15,12 @@ public class Pathmaker : MonoBehaviour
     public GameObject enemyPrefab1;
     public GameObject enemyPrefab2;
     public GameObject pathmakerSpherePrefab;
+    public GameObject GeneratingClip;
+
+    public AudioClip RoomGenerate;
+    public AudioClip WallGenerateclip;
+    private AudioSource audioSource;
+    public UnityEvent WallGenerated;
 
     public static int globalTileCount = 0;
     public static int maxFloorTile = 700;
@@ -26,7 +33,8 @@ public class Pathmaker : MonoBehaviour
 
     private void Start()
     {
-        turnProbability = Random.Range(0.0f, 0.4f);
+        turnProbability = 0.3f;
+        audioSource = gameObject.GetComponent<AudioSource>();
     }
 
     void Update()
@@ -52,10 +60,12 @@ public class Pathmaker : MonoBehaviour
             float randomNumber = Random.Range(0.0f, 1.0f);
             float randomObject = Random.Range(0.0f, 1.0f);
 
-            if (randomNumber < 0.15f && globalTileCount + 30 <= maxFloorTile)
+            if (randomNumber < 0.05f && globalTileCount + 30 <= maxFloorTile)
             {
                 if (CanCreateRoom(transform.position))
                 {
+                    audioSource.clip = RoomGenerate;
+                    audioSource.Play();
                     yield return CreateRoom();
                 }
             }
@@ -76,8 +86,7 @@ public class Pathmaker : MonoBehaviour
                     }
                     if (randomObject > 0.02 && randomObject <= 0.05)
                     {
-                        GameObject selectedEnemy = Random.Range(0, 2) == 0 ? enemyPrefab1 : enemyPrefab2;
-                        GameObject newEnemy = Instantiate(selectedEnemy, transform.position, Quaternion.identity);
+                        Instantiate(Random.Range(0, 2) == 0 ? enemyPrefab1 : enemyPrefab2, transform.position, Quaternion.identity);
                     }
                     if (randomObject > 0.05 && randomObject <= 0.1)
                     {
@@ -104,7 +113,6 @@ public class Pathmaker : MonoBehaviour
     private IEnumerator CreateRoom()
     {
         Vector3 originalPosition = transform.position;
-        GameObject selectedEnemy = Random.Range(0, 2) == 0 ? enemyPrefab1 : enemyPrefab2;
 
         if (!CanCreateRoom(originalPosition))
         {
@@ -132,13 +140,13 @@ public class Pathmaker : MonoBehaviour
         {
             PlaceObject(chestPrefab, originalPosition + new Vector3(0, 0, 4));
             PlaceObject(coinPrefab, originalPosition + new Vector3(6, 0, 3));
-            PlaceObject(selectedEnemy, originalPosition + new Vector3(5, 0, 5));
+            PlaceObject(Random.Range(0, 2) == 0 ? enemyPrefab1 : enemyPrefab2, originalPosition + new Vector3(5, 0, 5));
         }
         if (randomNumber > 0.2 && randomNumber <= 0.4)
         {
             PlaceObject(coinPrefab, originalPosition + new Vector3(3, 0, 3));
             PlaceObject(coinPrefab, originalPosition + new Vector3(5, 0, 2));
-            PlaceObject(selectedEnemy, originalPosition + new Vector3(1, 0, 2));
+            PlaceObject(Random.Range(0, 2) == 0 ? enemyPrefab1 : enemyPrefab2, originalPosition + new Vector3(1, 0, 2));
         }
         if (randomNumber > 0.4 && randomNumber <= 0.6)
         {
@@ -147,16 +155,16 @@ public class Pathmaker : MonoBehaviour
         }
         if (randomNumber > 0.6 && randomNumber <= 0.8)
         {
-            PlaceObject(selectedEnemy, originalPosition + new Vector3(2, 0, 3));
-            PlaceObject(selectedEnemy, originalPosition + new Vector3(5, 0, 2));
-            PlaceObject(selectedEnemy, originalPosition + new Vector3(4, 0, 4));
+            PlaceObject(Random.Range(0, 2) == 0 ? enemyPrefab1 : enemyPrefab2, originalPosition + new Vector3(2, 0, 3));
+            PlaceObject(Random.Range(0, 2) == 0 ? enemyPrefab1 : enemyPrefab2, originalPosition + new Vector3(5, 0, 2));
+            PlaceObject(Random.Range(0, 2) == 0 ? enemyPrefab1 : enemyPrefab2, originalPosition + new Vector3(4, 0, 4));
             PlaceObject(chestPrefab, originalPosition + new Vector3(2, 0, 0));
         }
         if (randomNumber > 0.8)
         {
             PlaceObject(chestPrefab, originalPosition + new Vector3(1, 0, 1));
-            PlaceObject(selectedEnemy, originalPosition + new Vector3(4, 0, 2));
-            PlaceObject(selectedEnemy, originalPosition + new Vector3(2, 0, 5));
+            PlaceObject(Random.Range(0, 2) == 0 ? enemyPrefab1 : enemyPrefab2, originalPosition + new Vector3(4, 0, 2));
+            PlaceObject(Random.Range(0, 2) == 0 ? enemyPrefab1 : enemyPrefab2, originalPosition + new Vector3(2, 0, 5));
         }
 
         transform.position = originalPosition + new Vector3(7, 0, 2);
@@ -203,11 +211,19 @@ public class Pathmaker : MonoBehaviour
 
     private void FinishGeneration()
     {
+        GeneratingClip.SetActive(false);
+        StartCoroutine(waiter());
+
         foreach (var floor in placedFloors)
         {
             GenerateWalls();
         }
-        Destroy(gameObject);
+    }
+    IEnumerator waiter()
+    {
+        yield return new WaitForSeconds(0);
+        audioSource.clip = WallGenerateclip;
+        audioSource.Play();
     }
 
     private void GenerateWalls()
